@@ -1,0 +1,2 @@
+class PayersController < ApplicationController
+end
