@@ -1,9 +1,8 @@
 Rails.application.routes.draw do
-  resources :transactions
-  resources :payers
-  resources :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  resources :transactions, only: [:show, :index, :create]
+  resources :payers, only: [:show]
 
-  # Defines the root path route ("/")
-  # root "articles#index"
+  get 'spend', to: 'transactions#spend'
+
+
 end
