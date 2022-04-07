@@ -3,7 +3,7 @@ class CreateTransactions < ActiveRecord::Migration[7.0]
     create_table :transactions do |t|
       t.integer :points
       t.belongs_to :payer
-      t.timestamps
+      t.datetime :timestamp
     end
   end
 end

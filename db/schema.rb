@@ -10,12 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_04_07_192644) do
+ActiveRecord::Schema[7.0].define(version: 2022_04_07_192706) do
   create_table "payers", force: :cascade do |t|
     t.string "name"
     t.integer "points"
+    t.integer "spent"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "transactions", force: :cascade do |t|
+    t.integer "points"
+    t.integer "payer_id"
+    t.datetime "timestamp"
+    t.index ["payer_id"], name: "index_transactions_on_payer_id"
   end
 
 end
