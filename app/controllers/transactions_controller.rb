@@ -20,18 +20,32 @@ class TransactionsController < ApplicationController
 
     def spend
 
+        spend = params[:spend].to_i
         transactions = Transaction.all
         sorted_transactions = transactions.sort_by {|t| t.timestamp}
 
-        if params[:spend].to_i > total
+        if spend > total
             render json: "Error"
-        else
-            render json: sorted_transactions
+        else  
+            
+            sorted_transactions.each do |t|
+                if (spend - t.points) >= 0
+                    byebug
+                    t.payer.spent -= t.points
+                    spend -= t.points
+                else
+                    byebug
+                    t.payer.spent -= spend
+                    spend = 0
+                    break
+                end
+            end
+
+            payers = Payer.all
+            render json: payers
         end
 
         
-        
-        # sort by transaction
         # substract and record difference in payer, if spend remains move on
         # return payer recorded
     end
