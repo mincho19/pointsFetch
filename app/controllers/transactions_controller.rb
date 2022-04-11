@@ -52,12 +52,12 @@ class TransactionsController < ApplicationController
             end
 
             #need to adjust response format
-            render json: Payer.all
+            render json: Payer.all, each_serializer: TransactionSpendSerializer
         end
     end
 
     def points_balance
-        render json: Payer.all
+        render json: Payer.all, each_serializer: TransactionBalanceSerializer
     end
 
     private 
