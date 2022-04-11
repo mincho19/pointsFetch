@@ -22,10 +22,11 @@ class TransactionsController < ApplicationController
         transaction = Transaction.new(points: params[:points], payer: payer, timestamp: params[:timestamp])
         
         #Adjust points based on transaction IF balance doesn't go negative
-        if(payer.points + params[:points] > 0)
+        if(payer.points + params[:points] >= 0)
             payer.save!
             transaction.save!
             payer.update(points: payer.points + params[:points])
+            render json: Transaction.all
         else
             render json: "Transaction will make payer balance go negative. Transaction Cancelled."
         end
@@ -34,14 +35,14 @@ class TransactionsController < ApplicationController
     def spend
         spendAmount = params[:points]
         transactions = Transaction.all
-        sorted_transactions = transactions.sort_by {|t| t.timestamp}
 
+        sorted_transactions = transactions.sort_by {|t| t.timestamp}
         if spendAmount > totalPointsAvailable
             render json: "Error, spendAmount is greater than total available balances of Payer.all"
 
         else  
-            
             sorted_transactions.each do |t|
+                print(t.id)
                 if (spendAmount - t.points) > 0
                     t.payer.update(points: (t.payer.points - t.points))
                     t.payer.update(spent: (t.payer.spent - t.points))
