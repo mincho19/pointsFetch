@@ -1,21 +1,32 @@
 class TransactionsController < ApplicationController
-    
-    def show
-        transactions = Transaction.all
-        render json: transactions
-    end
+    protect_from_forgery with: :null_session
 
-    def index
+    def show
         transaction = find_transaction
         render json: transaction
     end
 
+    def index
+        transactions = Transaction.all
+        render json: transactions
+    end
+
     def create
+
         # NEEDS TO CHECK IF TRANSACTION WILL SET PAYER NEGATIVE
         # need to verify proper inputs
-        payer = find_or_create_payer(name: params[:name])
+
+        #find or create payer associated with transaction
+        payer = find_or_create_payer(name: params[:payer])
+
+        #Adjust points based on transaction
         payer['points'] += params[:points]
-        @transaction = Transaction.create(points: params[:points], payer: payer)
+
+        #create transaction
+        @transaction = Transaction.create(points: params[:points], payer: payer, timestamp: params[:timestamp])
+        
+        render json: payer
+
     end
 
     def spend
@@ -29,20 +40,16 @@ class TransactionsController < ApplicationController
         else  
             
             sorted_transactions.each do |t|
-                if (spend - t.points) >= 0
-                    byebug
+                if (spend - t.points) > 0
                     t.payer.spent -= t.points
                     spend -= t.points
                 else
-                    byebug
                     t.payer.spent -= spend
                     spend = 0
                     break
                 end
             end
-
-            payers = Payer.all
-            render json: payers
+            render json: Payer.all
         end
 
         
@@ -71,7 +78,7 @@ class TransactionsController < ApplicationController
         if Payer.find_by(name: name) != nil
             Payer.find_by(name: name)
         else
-            Payer.create(name: name, points: 0)
+            Payer.create(name: name, points: 0, spent: 0)
         end
     end
 end
