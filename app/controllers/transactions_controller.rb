@@ -1,5 +1,5 @@
 class TransactionsController < ApplicationController
-    protect_from_forgery with: :null_session
+    skip_before_action :verify_authenticity_token
 
     def show
         transaction = find_transaction
@@ -13,18 +13,24 @@ class TransactionsController < ApplicationController
 
     def create
 
+
+
         # NEEDS TO CHECK IF TRANSACTION WILL SET PAYER NEGATIVE
         # need to verify proper inputs
 
         #find or create payer associated with transaction
         payer = find_or_create_payer(name: params[:payer])
 
+        # byebug
+
         #Adjust points based on transaction
         payer['points'] += params[:points]
+        
+        # byebug
 
         #create transaction
         @transaction = Transaction.create(points: params[:points], payer: payer, timestamp: params[:timestamp])
-        
+
         render json: payer
 
     end
