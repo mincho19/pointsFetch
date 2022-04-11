@@ -12,55 +12,52 @@ class TransactionsController < ApplicationController
     end
 
     def create
-
-
-
         # NEEDS TO CHECK IF TRANSACTION WILL SET PAYER NEGATIVE
         # need to verify proper inputs
 
         #find or create payer associated with transaction
         payer = find_or_create_payer(name: params[:payer])
 
-        # byebug
-
         #Adjust points based on transaction
-        payer['points'] += params[:points]
-        
-        # byebug
+        payer.update(points: payer.points + params[:points])
 
         #create transaction
-        @transaction = Transaction.create(points: params[:points], payer: payer, timestamp: params[:timestamp])
+        transaction = Transaction.create(points: params[:points], payer: payer, timestamp: params[:timestamp])
 
-        render json: payer
+        render json: Transaction.all
 
     end
 
     def spend
-
-        spend = params[:spend].to_i
+        spendAmount = params[:points]
         transactions = Transaction.all
         sorted_transactions = transactions.sort_by {|t| t.timestamp}
 
-        if spend > total
-            render json: "Error"
+        if spendAmount > totalPointsAvailable
+            render json: "Error, Spend is greater than available balances"
+
         else  
             
             sorted_transactions.each do |t|
-                if (spend - t.points) > 0
-                    t.payer.spent -= t.points
+                if (spendAmount - t.points) > 0
+                    t.payer.update(points: (t.payer.points - t.points))
+                    t.payer.update(spent: (t.payer.spent - t.points))
                     spend -= t.points
                 else
-                    t.payer.spent -= spend
-                    spend = 0
+                    t.payer.update(points: (t.payer.points - spendAmount))
+                    t.payer.update(spent: (t.payer.spent - spendAmount))
+                    spendAmount = 0
                     break
                 end
             end
+
+            #need to adjust response format
             render json: Payer.all
         end
+    end
 
-        
-        # substract and record difference in payer, if spend remains move on
-        # return payer recorded
+    def pointsBalance
+        render json:Payer.all
     end
 
     private 
@@ -69,10 +66,10 @@ class TransactionsController < ApplicationController
         Transaction.find_by(id: params[:id])
     end
 
-    def total
-        transactions = Transaction.all
+    def totalPointsAvailable
+        payers = Payer.all
         total = 0
-        transactions.each do |item|
+        payers.each do |item|
             total += item['points']
         end
         total
