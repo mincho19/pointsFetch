@@ -34,7 +34,7 @@ class TransactionsController < ApplicationController
         sorted_transactions = transactions.sort_by {|t| t.timestamp}
 
         if spendAmount > totalPointsAvailable
-            render json: "Error, Spend is greater than available balances"
+            render json: "Error, spendAmount is greater than total available balances of Payer.all"
 
         else  
             
@@ -56,8 +56,8 @@ class TransactionsController < ApplicationController
         end
     end
 
-    def pointsBalance
-        render json:Payer.all
+    def points_balance
+        render json: Payer.all
     end
 
     private 
@@ -67,15 +67,13 @@ class TransactionsController < ApplicationController
     end
 
     def totalPointsAvailable
-        payers = Payer.all
         total = 0
-        payers.each do |item|
+        Payer.all.each do |item|
             total += item['points']
         end
         total
         
     end
-
 
     def find_or_create_payer(name:)
         if Payer.find_by(name: name) != nil
