@@ -19,6 +19,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_07_192706) do
 
   create_table "transactions", force: :cascade do |t|
     t.integer "points"
+    t.integer "spentpoints"
     t.integer "payer_id"
     t.datetime "timestamp"
     t.index ["payer_id"], name: "index_transactions_on_payer_id"

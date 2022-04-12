@@ -13,43 +13,47 @@ class TransactionsController < ApplicationController
     end
 
     def create
-        # NEEDS TO CHECK IF TRANSACTION WILL SET PAYER NEGATIVE
+        transArray = params[:transactions]
+        transArray.each do |params|
+            #find or create payer associated with transaction
+            payer = find_or_create_payer(name: params[:payer])
 
-        #find or create payer associated with transaction
-        payer = find_or_create_payer(name: params[:payer])
-
-        #create transaction
-        transaction = Transaction.new(points: params[:points], payer: payer, timestamp: params[:timestamp])
-        
-        #Adjust points based on transaction IF balance doesn't go negative
-        if(payer.points + params[:points] >= 0)
-            payer.save!
-            transaction.save!
-            payer.update(points: payer.points + params[:points])
-            render json: Transaction.all
-        else
-            render json: "Transaction will make payer balance go negative. Transaction Cancelled."
+            #create transaction
+            transaction = Transaction.new(points: params[:points], spentpoints: params[:points], payer: payer, timestamp: params[:timestamp])
+            
+            #Adjust points based on transaction IF balance doesn't go negative
+            if(payer.points + params[:points] >= 0)
+                payer.save!
+                transaction.save!
+                payer.update(points: payer.points + params[:points])
+          
+            else
+                render json: "Transaction will make payer balance go negative. Transaction Cancelled."
+                break
+            end
         end
+        render json: Transaction.all
+        
     end
 
     def spend
-        spendAmount = params[:points]
+        spendAmount = params[:points].to_i
         transactions = Transaction.all
 
         sorted_transactions = transactions.sort_by {|t| t.timestamp}
         if spendAmount > totalPointsAvailable
             render json: "Error, spendAmount is greater than total available balances of Payer.all"
-
         else  
             sorted_transactions.each do |t|
-                print(t.id)
-                if (spendAmount - t.points) > 0
-                    t.payer.update(points: (t.payer.points - t.points))
-                    t.payer.update(spent: (t.payer.spent - t.points))
-                    spend -= t.points
+                if (spendAmount - t.spentpoints) > 0
+                    t.payer.update(points: (t.payer.points - t.spentpoints))
+                    t.payer.update(spent: (t.payer.spent - t.spentpoints))
+                    spendAmount -= t.spentpoints
+                    t.spentpoints = 0
                 else
                     t.payer.update(points: (t.payer.points - spendAmount))
                     t.payer.update(spent: (t.payer.spent - spendAmount))
+                    t.spentpoints -= spendAmount
                     spendAmount = 0
                     break
                 end
