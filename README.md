@@ -13,28 +13,24 @@
 ## There were two rules specified for spending as detailed below:
     - We want the oldest points to be spent first (oldest based on transaction timestamp, not the order they’re received)
     - We want no payer's points to go negative.
+    
 ## Requirements
 - Ruby 2.7.4
 - NodeJS (v16), and npm
 
 Verify which version of Ruby you're running by entering this in the terminal:
 
-```sh
-ruby -v
-```
+"ruby -v"
+
 
 you can use `rvm` to install a newer version of Ruby:
 
-```sh
-rvm install 2.7.4 --default
-```
+"rvm install 2.7.4 --default"
 
 You should also install the latest versions of `bundler` and `rails`:
 
-```sh
-gem install bundler
-gem install rails
-```
+"gem install bundler"
+"gem install rails"
 
 ## System dependencies 
 - Please copy and paste the following commands into the Gemfile:
@@ -59,7 +55,6 @@ The `create` call can be called with the following route:
 for example:
 "/transactions/dannon/3000/"2020-11-02T14:00:00Z"
 
-
 The `spend` call can be called with the following route:
 "/spend:points"
 for example:
@@ -72,18 +67,10 @@ The `points_balance` route can simply be called with the following route:
 
 **it should be noted that the data will persist**
 
-to reset the data please enter "rails db:reset" into the console
-<!-- 
-*seeds.rb*
+*to reset the data please enter "rails db:reset" into the console*
 
-experimental data can be initialized in the seeds.rb file found in the the db folder. I have created some data that will initialize when "db:reset" is called. If the data is not needed or additional data is required, it can be changed within this file. -->
+## For more information regarding how the routes are handled, please refer to the controllers folder under the apps folder
 
-## it has also been copy and pasted below for your convenience
+## For more information on how data is displayed, please reference the serializers folder in the apps folder
 
-Rails.application.routes.draw do
-  resources :transactions, only: [:show, :index]
-  resources :payers, only: [:index]
-  get "/spend/:points", to: 'transactions#spend'
-  get "/points_balance", to: 'transactions#points_balance'
-  get "/transactions/:payer/:points/:timestamp", to: "transactions#create"
-end
+## For more information on the tables in the database please reference the migrate folder in the db folder
