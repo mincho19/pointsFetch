@@ -13,26 +13,23 @@ class TransactionsController < ApplicationController
     end
 
     def create
-        transArray = params[:transactions]
-        transArray.each do |params|
-            #find or create payer associated with transaction
             payer = find_or_create_payer(name: params[:payer])
+            points = params[:points].to_i
 
             #create transaction
-            transaction = Transaction.new(points: params[:points], spentpoints: params[:points], payer: payer, timestamp: params[:timestamp])
-            
+            transaction = Transaction.new(points: points, points_available: points, payer: payer, timestamp: params[:timestamp])
+
             #Adjust points based on transaction IF balance doesn't go negative
-            if(payer.points + params[:points] >= 0)
+            if(payer.points + points >= 0)
                 payer.save!
                 transaction.save!
-                payer.update(points: payer.points + params[:points])
-          
+                payer.update(points: payer.points + points)
+                render json: transaction
             else
                 render json: "Transaction will make payer balance go negative. Transaction Cancelled."
-                break
             end
-        end
-        render json: Transaction.all
+
+        
         
     end
 
@@ -42,18 +39,19 @@ class TransactionsController < ApplicationController
 
         sorted_transactions = transactions.sort_by {|t| t.timestamp}
         if spendAmount > totalPointsAvailable
-            render json: "Error, spendAmount is greater than total available balances of Payer.all"
+            render json: "Error, spend amount is greater than total available balances of all Payers"
         else  
             sorted_transactions.each do |t|
-                if (spendAmount - t.spentpoints) > 0
-                    t.payer.update(points: (t.payer.points - t.spentpoints))
-                    t.payer.update(spent: (t.payer.spent - t.spentpoints))
-                    spendAmount -= t.spentpoints
-                    t.spentpoints = 0
+
+                if (spendAmount - t.points_available) > 0
+                    t.payer.update(points: (t.payer.points - t.points_available))
+                    t.payer.update(spent: (t.payer.spent - t.points_available))
+                    spendAmount -= t.points_available
+                    t.update(points_available: 0)
                 else
                     t.payer.update(points: (t.payer.points - spendAmount))
                     t.payer.update(spent: (t.payer.spent - spendAmount))
-                    t.spentpoints -= spendAmount
+                    t.update(points_available: t.points_available -= spendAmount)
                     spendAmount = 0
                     break
                 end

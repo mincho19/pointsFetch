@@ -54,33 +54,36 @@ You can use the following commands to run the application:
 
 Postman was used to develop and test the backend. The link can be found here [https://www.postman.com/downloads/]
 
-When formatting the data for each call to the server, the specifications from the prompt were followed with the exception of adding transactions. An array was used to allow multiple entries to be added quickly.
+The `create` call can be called with the following route:
+"/transactions/:payer/:points/:timestamp"
+for example:
+"/transactions/dannon/3000/"2020-11-02T14:00:00Z"
 
-Please format input to `create` as follows:
 
-    { "transactions":
-        [
-        { "payer": "DANNON", "points": 1000, "timestamp": "2020-11-02T14:00:00Z" },
-        { "payer": "UNILEVER", "points": 200, "timestamp": "2020-10-31T11:00:00Z" },
-        { "payer": "DANNON", "points": -200, "timestamp": "2020-10-31T15:00:00Z" },
-        { "payer": "MILLER COORS", "points": 10000, "timestamp": "2020-11-01T14:00:00Z" },
-        { "payer": "DANNON", "points": 300, "timestamp": "2020-10-31T10:00:00Z" }
-        ]
-    }
+The `spend` call can be called with the following route:
+"/spend:points"
+for example:
+"/spend/3000"
 
-The `spend` call can be called with the following input:
-    { "points": 5000 }
-
-The `points_balance` route can simply be called.
+The `points_balance` route can simply be called with the following route:
+"/points_balance"
 
 **For information of fetch routes, please refer to the routes.rb file located in the config folder**
+
+**it should be noted that the data will persist**
+
+to reset the data please enter "rails db:reset" into the console
+<!-- 
+*seeds.rb*
+
+experimental data can be initialized in the seeds.rb file found in the the db folder. I have created some data that will initialize when "db:reset" is called. If the data is not needed or additional data is required, it can be changed within this file. -->
 
 ## it has also been copy and pasted below for your convenience
 
 Rails.application.routes.draw do
-  resources :transactions, only: [:show, :index, :create]
+  resources :transactions, only: [:show, :index]
   resources :payers, only: [:index]
-  get "/spend", to: 'transactions#spend'
+  get "/spend/:points", to: 'transactions#spend'
   get "/points_balance", to: 'transactions#points_balance'
-
+  get "/transactions/:payer/:points/:timestamp", to: "transactions#create"
 end
